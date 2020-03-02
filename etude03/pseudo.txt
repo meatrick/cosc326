@@ -1,0 +1,16 @@
+Turn input into Scenario object
+Scenario object has the list of numbers, the target value, and the mode for the order of operations
+pretty sure this is an NP hard problem so the only way to determine a correct solution is to iterate all permutations
+
+main {
+    Go through all inputs and turn them into Scenarios
+    for each Scenario {
+        for each possible ordering of the numbers {
+            for each space between numbers, add a +
+            replace a + with a *
+            switch the position of the * until its been in all positions
+            add another * and repeat
+            for each permutation, record the solution
+        }
+    }
+}
