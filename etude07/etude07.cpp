@@ -10,6 +10,9 @@ using namespace std;
 #define SPACE_CHAR 32
 #define FORWARD_SLASH_CHAR 47
 
+
+// test1: Ad/6h/3c/Ks/11d
+
 struct Card {
 	int value; // 2-13, 1
 	double suit; // 0=clubs, 1=diamonds, 2=hearts, 3=spades
@@ -61,7 +64,6 @@ int main() {
 	for (int i = 0; i < hands.size(); i++) {
 		Hand* hand = hands[i];
 		line = hand->input;
-		vector<Card*> cards;
 		Card* card;
 		char separator_type;
 		string output = "";
@@ -80,11 +82,12 @@ int main() {
 
 		int len = line.size();
 		for (int i = 0; i < len; i++) {
+			cout << "i: " << i << endl;
 			char c = line[i];
 			if (c >= 48 && c <= 57) { // digit 0-9
 				if (processing_card) {
 					// either out of order or second digit of 10-13
-					if (!card) {
+					if (processing_card && !card) {
 						// out of order
 						cout << c;
 						error_msg = "out of order";
@@ -114,6 +117,7 @@ int main() {
 				else {
 					// first number in card
 					card = new Card();
+					processing_card = true;
 					card->value = c - 48;
 				}
 			}
@@ -171,7 +175,7 @@ int main() {
 			}
 			else if (c == DASH_CHAR || c == SPACE_CHAR || c == FORWARD_SLASH_CHAR) {
 				// determine if the separator type is valid or set the initial type
-				if (cards.size() == 0) {
+				if (hand->cards.size() == 0) {
 					separator_type = c;
 				}
 				else if (c != separator_type) {
@@ -181,9 +185,9 @@ int main() {
 
 				if (processing_card) {
 					// end card
-					cards.push_back(card);
+					hand->cards.push_back(card);
 					cout << "adding card: " << card->value << "," << card->suit << endl;
-					card = new Card();
+					card = NULL;
 					processing_card = false;
 				}
 				else {
@@ -200,6 +204,7 @@ int main() {
 
 			if (error_flag) {
 				hand->output = "Invalid: " + hand->input;
+				cout << "error flag thrown" << endl;
 				break;
 			}
 		}
@@ -211,10 +216,9 @@ int main() {
 
 		// 2: Checks whether the input is a valid poker hand
 		// if there are 5 cards and no errors, its a valid hand: sort it. otherwise, do nothing
-		if (cards.size() == 5 && !error_flag) {
+		if (hand->cards.size() == 5 && !error_flag) {
 			// sort it
-			sort(cards.begin(), cards.end(), cardSort);
-			hand->cards = cards;
+			sort(hand->cards.begin(), hand->cards.end(), cardSort);
 		}
 
 
@@ -224,6 +228,8 @@ int main() {
 
 	// 3: for each hand, If the input is valid, outputs the poker hand in std format, otherwise outputs "Invalid: [input]"
 	for (int i = 0; i < hands.size(); i++) {
+		cout << "enter output loop";
+
 		Hand* hand = hands[i];
 		cout << hand->output << endl;
 
