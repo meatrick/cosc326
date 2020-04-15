@@ -11,12 +11,13 @@ using namespace std;
 #define FORWARD_SLASH_CHAR 47
 
 struct Card {
-	int value; // 2-13, 1
-	double suit; // 0=clubs, 1=diamonds, 2=hearts, 3=spades
+	int value = -1; // 2-13, 1
+	double suit = -1; // 0=clubs, 1=diamonds, 2=hearts, 3=spades
 };
 
 struct Hand {
 	vector<Card> cards;
+	string output = "";
 };
 
 // comparator to sort a Hand
@@ -27,6 +28,12 @@ struct {
 } cardSort;
 //use sort(s.begin(), s.end(), cardSort)
 
+// for each line,
+	// read the line
+	// create a Hand
+	// determine the output
+// for each Hand, print the output
+
 
 int main() {
 	string line = "";
@@ -35,27 +42,45 @@ int main() {
 		// 1: Read the line of input
 		Hand hand;
 		vector<Card> cards;
-		int separator_type;
+		Card card;
+		char separator_type;
+		string output = "";
+		bool processing_card = false;
+
+		// need a flag: currently processing a new card t/f
+		// if its a number and flag = f
+		// else if its a number and flag = t
+		// else if its a letter and flag = f
+		// else if its a letter and flag = t
+		// else if its a separator and flag = t, check if card is valid
+			// if yes, set flag = f
+
 
 		int len = line.size();
 		for (int i = 0; i < len; i++) {
 			char c = line[i];
 			if (c >= 48 && c <= 57) { // digit 0-9
-				// peek next char
-				try {
-					char c_next = line[i + 1];
-					if (c_next >= 48 && c <= 57) {
-						Card card;
-						card.value = ((c - 48) * 10) + c_next - 48;
-						cards.push_back(card);
-					}
+				if (processing_card) {
+					// either out of order or second digit of 10-13
+					
 				}
-				catch (exception& e) {
-					cout << "OOB error when peeking to see if # is double digit implies Invalid input\n";
+				else {
+					// first number in card
+					card.value = c - 48;
 				}
 			}
 			// c is a letter
 			else if (c >= 65 && c <= 90 || c >= 97 && c <= 122) {
+				// either A,J,Q,K, or suit 
+				if (processing_card) {
+					// suit
+				}
+				else {
+					// A,J,Q, or K
+				}
+
+
+
 				// assign suit value to card
 				try {
 					Card card = cards.back();
@@ -72,19 +97,34 @@ int main() {
 						card.suit = 1;
 					}
 				} catch (exception& e) {
-					cout << "Hand empty when it shouldn't be, implies invalid input\n";
+					output = "Hand empty when it shouldn't be, implies invalid input";
 				}
 			}
 			else if (c == DASH_CHAR || c == SPACE_CHAR || c == FORWARD_SLASH_CHAR) {
-				//separator_type = c;
+				if (processing_card) {
+					// end card
+				}
+				else {
+					// two spacers in a row, error
+				}
+
+				if (cards.size() == 1) {
+					separator_type = c;
+				}
+				else if (c != separator_type) {
+					output = "Inconsistent separator type";
+					
+				}
 			}
 			else {
-				cout << "Invalid input" << endl;
+				output = "Invalid input";
 			}
 		}
 
 
 		// 2: Checks whether the input is a valid poker hand
+		// sort the hand if it is
+
 		// 3: If the input is valid, outputs the poker hand in std format, otherwise outputs "Invalid: [input]"
 
 	}
