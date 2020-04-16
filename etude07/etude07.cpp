@@ -9,13 +9,15 @@ using namespace std;
 #define DASH_CHAR 45
 #define SPACE_CHAR 32
 #define FORWARD_SLASH_CHAR 47
+const string values_to_output[] = { "-1", "A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K" };
+const string suit_to_output[] = { "C", "D", "H", "S" };
 
 
 // test1: Ad/6h/3c/Ks/11d
 
 struct Card {
 	int value; // 2-13, 1
-	double suit; // 0=clubs, 1=diamonds, 2=hearts, 3=spades
+	int suit; // 0=clubs, 1=diamonds, 2=hearts, 3=spades
 
 	Card() {
 		value = -1;
@@ -37,7 +39,16 @@ struct Hand {
 // comparator to sort a Hand
 struct {
 	bool operator()(Card* a, Card* b) const {
-		return a->value + (a->suit * 0.25) < b->value + (b->suit * 0.25);
+		int val_a = a->value;
+		int val_b = b->value;
+		if (val_a == 1) {
+			val_a = 14;
+		}
+		if (val_b == 1) {
+			val_b = 14;
+		}
+
+		return val_a + (a->suit * 0.25) < val_b + (b->suit * 0.25);
 	}
 } cardSort;
 //use sort(s.begin(), s.end(), cardSort)
@@ -68,8 +79,6 @@ int main() {
 		hands.push_back(hand);
 	}
 
-	cout << "exited the input loop" << endl;
-
 	for (int j = 0; j < hands.size(); j++) {
 		Hand* hand = hands[j];
 		line = hand->input;
@@ -91,7 +100,6 @@ int main() {
 
 		int len = line.size();
 		for (int i = 0; i < len; i++) {
-			cout << "i: " << i << endl;
 			char c = line[i];
 
 			// if this char is the last char of the line
@@ -116,7 +124,7 @@ int main() {
 
 				// add the card to the hand
 				hand->cards.push_back(card);
-				cout << "adding card: " << card->value << "," << card->suit << endl;
+				// DEBUG: cout << "adding card: " << card->value << "," << card->suit << endl;
 				card = NULL;
 				processing_card = false;
 			}
@@ -126,7 +134,7 @@ int main() {
 					// either out of order or second digit of 10-13
 					if (processing_card && !card) {
 						// out of order
-						cout << c;
+						// DEBUG: cout << c;
 						error_msg = "out of order";
 						error_flag = true;
 					}
@@ -223,7 +231,7 @@ int main() {
 				if (processing_card) {
 					// end card
 					hand->cards.push_back(card);
-					cout << "adding card: " << card->value << "," << card->suit << endl;
+					// DEBUG: cout << "adding card: " << card->value << "," << card->suit << endl;
 					card = NULL;
 					processing_card = false;
 				}
@@ -253,28 +261,34 @@ int main() {
 
 		// 2: Checks whether the input is a valid poker hand
 		// if there are 5 cards and no errors, its a valid hand: sort it. otherwise, do nothing
-		if (hand->cards.size() == 5 && !error_flag) {
+		if (hand->cards.size() == NUM_CARDS && !error_flag) {
 			// sort it
 			sort(hand->cards.begin(), hand->cards.end(), cardSort);
+
+			string output;
+			for (int j = 0; j < hand->cards.size(); j++) {
+				Card* card = hand->cards[j];
+
+				// format output
+				output += values_to_output[card->value] + suit_to_output[card->suit];
+
+				// add spaces after all but the last card
+				if (j != 4) {
+					output += " ";
+				}
+			}
+			hand->output = output;
 		}
 
 
 	} // end for loop
 
-	cout << "exited the processing loop" << endl;
-
 	// 3: for each hand, If the input is valid, outputs the poker hand in std format, otherwise outputs "Invalid: [input]"
 	for (int i = 0; i < hands.size(); i++) {
-		cout << "enter output loop";
-
 		Hand* hand = hands[i];
+		vector<Card*> cards = hand->cards;
 		cout << hand->output << endl;
 
-		vector<Card*> cards = hand->cards;
-		for (int j = 0; j < cards.size(); j++) {
-			Card* card = cards[j];
-			cout << card->value << "," << card->suit << endl;
-		}
 	}
-
+	cout << endl;
 }
