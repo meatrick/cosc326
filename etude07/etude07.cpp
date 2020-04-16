@@ -42,6 +42,14 @@ struct {
 } cardSort;
 //use sort(s.begin(), s.end(), cardSort)
 
+// trim function from stack overflow
+string trim(string& str)
+{
+	size_t first = str.find_first_not_of(' ');
+	size_t last = str.find_last_not_of(' ');
+	return str.substr(first, (last - first + 1));
+}
+
 // for each line,
 	// read the line
 	// create a Hand
@@ -55,14 +63,15 @@ int main() {
 
 	// 1: Read the line of input
 	while (getline(cin, line)) {
+		line = trim(line);
 		Hand* hand = new Hand(line);
 		hands.push_back(hand);
 	}
 
 	cout << "exited the input loop" << endl;
 
-	for (int i = 0; i < hands.size(); i++) {
-		Hand* hand = hands[i];
+	for (int j = 0; j < hands.size(); j++) {
+		Hand* hand = hands[j];
 		line = hand->input;
 		Card* card;
 		char separator_type;
@@ -84,7 +93,35 @@ int main() {
 		for (int i = 0; i < len; i++) {
 			cout << "i: " << i << endl;
 			char c = line[i];
-			if (c >= 48 && c <= 57) { // digit 0-9
+
+			// if this char is the last char of the line
+			if (i == len - 1) {
+				// it must be the suit
+				if (c == 67 || c == 99) { // club
+					card->suit = 0;
+				}
+				else if (c == 72 || c == 104) { // heart
+					card->suit = 2;
+				}
+				else if (c == 83 || c == 115) { // spade
+					card->suit = 3;
+				}
+				else if (c == 68 || c == 100) { // diamond
+					card->suit = 1;
+				}
+				else {
+					error_msg = "invalid suit";
+					error_flag = true;
+				}
+
+				// add the card to the hand
+				hand->cards.push_back(card);
+				cout << "adding card: " << card->value << "," << card->suit << endl;
+				card = NULL;
+				processing_card = false;
+			}
+
+			else if (c >= 48 && c <= 57) { // digit 0-9
 				if (processing_card) {
 					// either out of order or second digit of 10-13
 					if (processing_card && !card) {
