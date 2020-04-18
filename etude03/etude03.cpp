@@ -68,7 +68,7 @@ int main() {
 
 		// create a binary string of length equal to the number of operands - 1
 		// this binary string starts at zero
-		// var solution;
+		// var solution = NULL;
 
 		// if LtoR order of operations, do:
 		// from 0 to the max number that binary string can go, do:
@@ -79,16 +79,39 @@ int main() {
 				// if the bit reads 1, multiply the sum by the i+1th number
 			// if the sum is equal to the goal number, set a flag, save the bitstring, and break from the loop
 			// else, continue
-		// pass the scenario and the solution to the method that will save the output to the scenario
+		// pass the scenario and the solution to the method that will save the desired output to the scenario
 
 		// else if normal order of operations, do:
+		// save the original bitstring and make a copy of the bistring
+		// len = size of bitstring
+		// int sum = 0
 		// from 0 to the max number that the binary string can go, do:
 			// product = 0
-			// for each bit of the bitstring from left to right, do:
-				// if 
-				// if not the last bit of the bistring, do:
-					// save the next bit of the bitstring
-					// if the next bit of the bitstring is 0, make vec[i] = 
+			// for i = 0 to len, do:
+				// if (repeat)
+					// i--
+					// repeat = false
+				// if (i == len-1) 
+					// all the multiplications are gone.  Do a pass and add everything together
+					// size = vec.size()
+					// for i to size-1, do:
+						// sum += i
+						// break
+				// if the bit = 0:
+					// continue to the next bit
+				// else if the bit = 1:
+					// vec[i] = vec[i] * vec[i+1]
+					// erase bit i from the bitstring and erase vec[i+1] from the vector of numbers
+					// bool repeat = true
+					// len--
+			// if sum == goal:
+				// save original bitstring, set a flag, break from the loop
+			// else, continue to the next bitstring
+			// pass the scenario and solution to the method that will save the desired output to the scenario
+				// if the bitstring is null or -1, that means it is impossible
+
+
+
 
 
 		do {
