@@ -9,6 +9,8 @@
 
 using namespace std;
 
+string increment_bitsting(string bitstring);
+
 struct Scenario {
 	vector<int> numbers;
 	int target_value;
@@ -16,10 +18,10 @@ struct Scenario {
 	string output;
 
 	// method: given a scenario object and a solution, create the output for the solution
-	// if the solution is NULL, do the "impossible" output
+	// if the solution is -1, do the "impossible" output
 	// else ...
 	void set_solution(string solution) {
-		if (solution == NULL) {
+		if (solution == "-1") { // impossible
 			this->output = order_mode + " " + to_string(target_value) + " impossible";
 			return;
 		}
@@ -31,8 +33,8 @@ struct Scenario {
 			}
 			else {
 				this->output += to_string(this->numbers[i]) + " ";
-				sting str_operator;
-				if (solution[i] == "0") {
+				string str_operator;
+				if (solution[i] == '0') {
 					str_operator = "+";
 				}
 				else {
@@ -54,8 +56,8 @@ string increment_bitstring(string bitstring) {
 		bitstring[len - 1] = '1';
 	}
 	else {
-		bitstring = increment_bitstring(bitstring.substr(0, len - 1);
-		bitstring += '0'
+		bitstring = increment_bitstring(bitstring.substr(0, len - 1));
+		bitstring += '0';
 	}
 
 	return bitstring;
@@ -79,7 +81,7 @@ int main() {
 		// input from first line
 		if (line_number % 2 == 1) {
 			int number;
-			s.numbers.clear();
+			s->numbers.clear();
 			while (ss >> number) {
 				s->numbers.push_back(number);
 			}
@@ -115,13 +117,13 @@ int main() {
 		}
 		// this binary string starts at zero
 		// var solution = NULL;
-		string solution = NULL;
+		string solution = "-1";
 		bool solution_found = false;
 
 		// if LtoR order of operations, do:
 		if (sc->order_mode == "L") {
 			// add the first number to the sum
-			int sum = vec_numbers;
+			int sum = vec_numbers[0];
 			// from 0 to the max number that binary string can go, do:
 			do {
 				// for each bit of the bitstring, from left to right, do:
@@ -149,7 +151,7 @@ int main() {
 						break;
 					}
 					// otherwise, increment
-					bitstring = increment_bistring(bitstring);
+					bitstring = increment_bitstring(bitstring);
 				}
 
 			} while (true);
@@ -159,7 +161,7 @@ int main() {
 		else if (sc->order_mode == "N") {
 			vector<int> vec_numbers_cpy = vec_numbers;
 			// save the original bitstring and make a copy of the bistring
-			string bistring_cpy = bitstring;
+			string bitstring_cpy = bitstring;
 			int bitstring_len = len - 1;
 
 			// len = size of bitstring + 1 (number of operands)
@@ -174,7 +176,7 @@ int main() {
 					// if (repeat)
 					if (repeat) {
 						i--;
-						repeat = false
+						repeat = false;
 					}
 					// if (i == len-1) 
 					if (i == bitstring_len - 1) {
@@ -192,10 +194,10 @@ int main() {
 					}
 					// else if the bit = 1:
 					else if (bitstring_cpy[i] == '1') {
-						vec_numbers[i] = vec[i] * vec[i + 1];
+						vec_numbers_cpy[i] = vec_numbers_cpy[i] * vec_numbers_cpy[i + 1];
 						// erase bit i from the bitstring and erase vec[i+1] from the vector of numbers
 						bitstring_cpy.erase(i, 1);
-						vec_numbers_cpy.erase(vec_numbers_cpy.begin() + (i + 1);
+						vec_numbers_cpy.erase(vec_numbers_cpy.begin() + (i + 1));
 						bool repeat = true;
 						bitstring_len--;
 					}
@@ -215,20 +217,20 @@ int main() {
 						break;
 					}
 					// otherwise, increment
-					bitstring = increment_bistring(bitstring);
+					bitstring = increment_bitstring(bitstring);
 				}
 
 			} while (true);
 		}
 
-		sc.set_solution(solution);
+		sc->set_solution(solution);
 
 	}
 
 
 	// output
-	for (Scenario sc : scenarios) {
-		cout << sc.output << endl;
+	for (Scenario* sc : scenarios) {
+		cout << sc->output << endl;
 	}
 
 
