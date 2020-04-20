@@ -12,13 +12,55 @@ using namespace std;
 struct Scenario {
 	vector<int> numbers;
 	int target_value;
-	char order_mode;
+	string order_mode;
 	string output;
+
+	// method: given a scenario object and a solution, create the output for the solution
+	// if the solution is NULL, do the "impossible" output
+	// else ...
+	void set_solution(string solution) {
+		if (solution == NULL) {
+			this->output = order_mode + " " + to_string(target_value) + " impossible";
+			return;
+		}
+
+		this->output = order_mode + " " + to_string(target_value) + " ";
+		for (int i = 0; i < this->numbers.size(); i++) {
+			if (i == this->numbers.size() - 1) {
+				this->output += to_string(this->numbers[i]);
+			}
+			else {
+				this->output += to_string(this->numbers[i]) + " ";
+				sting str_operator;
+				if (solution[i] == "0") {
+					str_operator = "+";
+				}
+				else {
+					str_operator = "*";
+				}
+				this->output += str_operator + " ";
+			}
+		}
+
+	}
 };
 
-// method: given a scenario object and a solution, create the output for the solution
-// if the solution is NULL, do the "impossible" output
-// else ...
+
+
+string increment_bitstring(string bitstring) {
+	size_t len = bitstring.size();
+	char lsb = bitstring[len - 1];
+	if (lsb == '0') {
+		bitstring[len - 1] = '1';
+	}
+	else {
+		bitstring = increment_bitstring(bitstring.substr(0, len - 1);
+		bitstring += '0'
+	}
+
+	return bitstring;
+}
+
 
 int main() {
 
@@ -67,64 +109,119 @@ int main() {
 		// sort(numbers, numbers + len);
 
 		// create a binary string of length equal to the number of operands - 1
+		string bitstring = "";
+		for (int i = 0; i < len - 1; i++) {
+			bitstring += "0";
+		}
 		// this binary string starts at zero
 		// var solution = NULL;
+		string solution = NULL;
+		bool solution_found = false;
 
 		// if LtoR order of operations, do:
-		// from 0 to the max number that binary string can go, do:
-			// sum = 0
+		if (sc->order_mode == "L") {
 			// add the first number to the sum
-			// for each bit of the bitstring, from left to right, do:
-				// if the bit reads 0, add the the i+1th number to the sum
-				// if the bit reads 1, multiply the sum by the i+1th number
-			// if the sum is equal to the goal number, set a flag, save the bitstring, and break from the loop
-			// else, continue
-		// pass the scenario and the solution to the method that will save the desired output to the scenario
+			int sum = vec_numbers;
+			// from 0 to the max number that binary string can go, do:
+			do {
+				// for each bit of the bitstring, from left to right, do:
+				for (int i = 0; i < len - 1; i++) {
+					// if the bit reads 0, add the the i+1th number to the sum
+					if (bitstring[i] == '0') {
+						sum += vec_numbers[i + 1]; // never out of bounds
+					}
+					// if the bit reads 1, multiply the sum by the i+1th number
+					else if (bitstring[i] == '1') {
+						sum *= vec_numbers[i + 1];
+					}
+				}
+				// if the sum is equal to the goal number, set a flag, save the bitstring, and break from the loop
+				if (sum == sc->target_value) {
+					solution_found = true;
+					solution = bitstring;
+					break;
+				}
+				else {
+					// else, continue (increment bitstring)
+					// terminate loop if this iteration was "11....1"
+					size_t found = bitstring.find("0");
+					if (found == string::npos) {
+						break;
+					}
+					// otherwise, increment
+					bitstring = increment_bistring(bitstring);
+				}
+
+			} while (true);
+		}
 
 		// else if normal order of operations, do:
-		// save the original bitstring and make a copy of the bistring
-		// len = size of bitstring
-		// int sum = 0
-		// from 0 to the max number that the binary string can go, do:
-			// product = 0
-			// for i = 0 to len, do:
-				// if (repeat)
-					// i--
-					// repeat = false
-				// if (i == len-1) 
-					// all the multiplications are gone.  Do a pass and add everything together
-					// size = vec.size()
-					// for i to size-1, do:
-						// sum += i
-						// break
-				// if the bit = 0:
-					// continue to the next bit
-				// else if the bit = 1:
-					// vec[i] = vec[i] * vec[i+1]
-					// erase bit i from the bitstring and erase vec[i+1] from the vector of numbers
-					// bool repeat = true
-					// len--
-			// if sum == goal:
-				// save original bitstring, set a flag, break from the loop
-			// else, continue to the next bitstring
-			// pass the scenario and solution to the method that will save the desired output to the scenario
-				// if the bitstring is null or -1, that means it is impossible
+		else if (sc->order_mode == "N") {
+			vector<int> vec_numbers_cpy = vec_numbers;
+			// save the original bitstring and make a copy of the bistring
+			string bistring_cpy = bitstring;
+			int bitstring_len = len - 1;
 
+			// len = size of bitstring + 1 (number of operands)
 
+			int sum = 0;
+			bool repeat = false;
+			// from 0 to the max number that the binary string can go, do:
+			do {
 
-
-
-		do {
-			for (int i = 0; i < len; i++) {
-				// a different permutations occurs here with each iteration
-				if (sc.order_mode == 'N') { // normal OOO
-
+				// for i = 0 to len - 1, do:
+				for (int i = 0; i < bitstring_len; i++) {
+					// if (repeat)
+					if (repeat) {
+						i--;
+						repeat = false
+					}
+					// if (i == len-1) 
+					if (i == bitstring_len - 1) {
+						// all the multiplications are gone.  Do a pass and add everything together
+						while (!vec_numbers_cpy.empty()) {
+							sum += vec_numbers_cpy.back();
+							vec_numbers_cpy.pop_back();
+						}
+						break;
+					}
+					// if the bit = 0:
+					if (bitstring_cpy[i] == '0') {
+						// continue to the next bit
+						continue;
+					}
+					// else if the bit = 1:
+					else if (bitstring_cpy[i] == '1') {
+						vec_numbers[i] = vec[i] * vec[i + 1];
+						// erase bit i from the bitstring and erase vec[i+1] from the vector of numbers
+						bitstring_cpy.erase(i, 1);
+						vec_numbers_cpy.erase(vec_numbers_cpy.begin() + (i + 1);
+						bool repeat = true;
+						bitstring_len--;
+					}
 				}
-				else { // L to R OOO
-
+				// if sum == goal:
+				if (sum == sc->target_value) {
+					// save original bitstring, set a flag, break from the loop
+					solution = bitstring;
+					solution_found = true;
+					break;
 				}
-			}
-		} while (next_permutation(numbers, numbers + len));
+				// else, continue to the next bitstring
+				else {
+					// terminate loop if this iteration was "11....1"
+					size_t found = bitstring.find("0");
+					if (found == string::npos) {
+						break;
+					}
+					// otherwise, increment
+					bitstring = increment_bistring(bitstring);
+				}
+
+			} while (true);
+		}
+
+		sc.set_solution(solution);
 
 	}
 
