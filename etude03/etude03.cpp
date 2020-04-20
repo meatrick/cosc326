@@ -17,6 +17,10 @@ struct Scenario {
 	string order_mode;
 	string output;
 
+	Scenario() {
+		// init
+	}
+
 	// method: given a scenario object and a solution, create the output for the solution
 	// if the solution is -1, do the "impossible" output
 	// else ...
@@ -70,18 +74,20 @@ int main() {
 
 	vector<Scenario*> scenarios;
 	string line;
-	Scenario* s;
+	Scenario* s = NULL;
 	int line_number = 0;
+
+	stringstream ss;
 
 
 	while (getline(cin, line)) {
 		line_number++;
-		stringstream ss(line);
+		ss.str(line);
 
 		// input from first line
 		if (line_number % 2 == 1) {
+			s = new Scenario();
 			int number;
-			s->numbers.clear();
 			while (ss >> number) {
 				s->numbers.push_back(number);
 			}
@@ -98,8 +104,30 @@ int main() {
 			// add the scenario to the list
 			scenarios.push_back(s);
 		}
+		ss.clear();
 	}
 
+
+
+
+
+	/*  TESTING FOR SCENARIO OBJECT AND INPUT READING
+	reverse(scenarios.begin(), scenarios.end());
+	while (!scenarios.empty()) {
+		Scenario* s = scenarios.back();
+		scenarios.pop_back();
+
+		vector<int> numbers = s->numbers;
+		cout << "numbers: ";
+		for (int i = 0; i < numbers.size(); i++) {
+			cout << numbers[i] << " ";
+		}
+		cout << endl;
+		cout << "target: " << s->target_value << endl;
+		cout << "mode: " << s->order_mode << endl;
+
+	}
+	*/
 
 	// do computation for each scenario
 	for (Scenario* sc : scenarios) {
@@ -234,22 +262,7 @@ int main() {
 	}
 
 
-	/*  TESTING FOR SCENARIO OBJECT AND INPUT READING
-	while (!scenarios.empty()) {
-		reverse(scenarios.begin(), scenarios.end());
-		Scenario s = scenarios.back();
-		scenarios.pop_back();
 
-		vector<int> numbers = s.numbers;
-		for (int i = 0; i < numbers.size(); i++) {
-			cout << numbers[i] << " ";
-		}
-		cout << endl;
-		cout << "target: " << s.target_value << endl;
-		cout << "mode: " << s.order_mode << endl;
-
-	}
-	*/
 
 
 
