@@ -132,8 +132,9 @@ int main() {
 	// do computation for each scenario
 	for (Scenario* sc : scenarios) {
 		// iterate through all permutations of list of numbers
-		vector<int> vec_numbers = sc->numbers;
+		vector<int> vec_numbers(sc->numbers);
 		int len = vec_numbers.size();
+
 		// int numbers[len];
 		// copy(vec_numbers.begin(), vec_numbers.end(), numbers);
 		// sort(numbers, numbers + len);
@@ -202,7 +203,6 @@ int main() {
 
 		// else if normal order of operations, do:
 		else if (sc->order_mode == "N") {
-			vector<int> vec_numbers_cpy = vec_numbers;
 			// save the original bitstring and make a copy of the bistring
 			int bitstring_len = len - 1;
 
@@ -211,6 +211,7 @@ int main() {
 			bool repeat = false;
 			// from 0 to the max number that the binary string can go, do:
 			do {
+				vector<int> vec_numbers_cpy(vec_numbers);
 				cout << "attempting bitstring: " << bitstring << endl;
 				string bitstring_cpy = bitstring;
 				int sum = 0;
@@ -219,13 +220,6 @@ int main() {
 				for (int i = 0; i < bitstring_len; i++) {
 					cout << "iteration: " << i << endl;
 					cout << "working bitstring copy: " << bitstring_cpy << endl;
-					// if (repeat)
-					if (repeat) {
-						cout << "repeating" << endl;
-						i--;
-						repeat = false;
-						continue;
-					}
 					// if there are only +'s left:
 					size_t find = bitstring_cpy.find("1");
 					if (find == string::npos) {
@@ -235,6 +229,7 @@ int main() {
 							sum += vec_numbers_cpy.back();
 							vec_numbers_cpy.pop_back();
 						}
+						cout << "the sum is " << sum << endl;
 						break;
 					}
 					// if the bit = 0:
@@ -245,21 +240,43 @@ int main() {
 					}
 					// else if the bit = 1:
 					else if (bitstring_cpy[i] == '1') {
+						cout << "vector copy size: " << vec_numbers_cpy.size() << endl;
 						cout << "bit " << i << " of bitstring_cpy " << bitstring_cpy << " is 1" << endl;
-						cout << "number " << i << " is " << vec_numbers_cpy[i] << endl;
-						cout << "number " << i + 1 << " is " << vec_numbers_cpy[i + 1] << endl;
+						cout << "number at index " << i << " is " << vec_numbers_cpy[i] << endl;
+						cout << "number at index " << i + 1 << " is " << vec_numbers_cpy[i + 1] << endl;
 						vec_numbers_cpy[i] *= vec_numbers_cpy[i + 1];
 						// erase bit i from the bitstring and erase vec[i+1] from the vector of numbers
 						bitstring_cpy.erase(i, 1);
-						cout << "Find seg fault" << endl;
-						int pos_to_erase = i + 1;
-						vec_numbers_cpy.erase(vec_numbers_cpy.begin() + pos_to_erase);
+						// int pos_to_erase = i + 1;
+						// vec_numbers_cpy.erase(vec_numbers_cpy.begin()+pos_to_erase);
+						// erase manually by making a copy of the vector:
+						vector<int> vec;
+						for (int j = 0; j < vec_numbers_cpy.size(); j++) {
+							cout << "TEST" << endl;
+							if (j == i + 1) {
+								cout << "skipping copy at index " << j << endl;
+								continue;
+							}
+							cout << "pushing " << vec_numbers_cpy[j] << endl;
+							vec.push_back(vec_numbers_cpy[j]);
+						}
+						vec_numbers_cpy = vec;
+
+						// cout << "Find seg fault" << endl;
 						bool repeat = true;
 						bitstring_len--;
-						cout << "the bitstring is now: " << bitstring;
+						cout << "the bitstring is now: " << bitstring_cpy << endl;
 						cout << "bitstring len is now: " << bitstring_len << endl;
 						cout << "after multiplcation, number " << i << " is " << vec_numbers_cpy[i] << endl;
 						//<< " and number " << i+1 << " is " << vec_numbers_cpy[i+1] << endl; casues out of bounds error
+
+						// if (repeat)
+						if (repeat) {
+							cout << "repeating" << endl;
+							i = i - 2;
+							repeat = false;
+							continue;
+						}
 					}
 				}
 				// if sum == goal:
