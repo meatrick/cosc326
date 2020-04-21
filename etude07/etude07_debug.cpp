@@ -12,6 +12,17 @@ using namespace std;
 const string values_to_output[] = { "-1", "A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K" };
 const string suit_to_output[] = { "C", "D", "H", "S" };
 
+
+/* test1:
+Ad/6h/3c/Ks/11d
+5c Kh As 6d 7h
+qh-6h-6H-12D-1h
+Ac 4h
+Ah/Qd-3h/1d/6c
+rd/6h/3c/Ks/11d
+Ay/6h/3c/Ks/11d
+
+*/
 struct Card {
 	int value; // 2-13, 1
 	int suit; // 0=clubs, 1=diamonds, 2=hearts, 3=spades
@@ -58,6 +69,12 @@ string trim(string& str)
 	return str.substr(first, (last - first + 1));
 }
 
+// for each line,
+	// read the line
+	// create a Hand
+	// determine the output
+// for each Hand, print the output
+
 
 int main() {
 	string line = "";
@@ -80,6 +97,14 @@ int main() {
 		bool processing_card = false;
 		bool error_flag = false;
 
+		// need a flag: currently processing a new card t/f
+		// if its a number and flag = f
+		// else if its a number and flag = t
+		// else if its a letter and flag = f
+		// else if its a letter and flag = t
+		// else if its a separator and flag = t, check if card is valid
+			// if yes, set flag = f
+
 
 		int len = line.size();
 		for (int i = 0; i < len; i++) {
@@ -101,11 +126,13 @@ int main() {
 					card->suit = 1;
 				}
 				else {
+					error_msg = "invalid suit";
 					error_flag = true;
 				}
 
 				// add the card to the hand
 				hand->cards.push_back(card);
+				// DEBUG: cout << "adding card: " << card->value << "," << card->suit << endl;
 				card = NULL;
 				processing_card = false;
 			}
@@ -115,6 +142,8 @@ int main() {
 					// either out of order or second digit of 10-13
 					if (processing_card && !card) {
 						// out of order
+						// DEBUG: cout << c;
+						error_msg = "out of order";
 						error_flag = true;
 					}
 					else {
@@ -133,6 +162,7 @@ int main() {
 							}
 						}
 						else {
+							error_msg = "Invalid";
 							error_flag = true;
 						}
 					}
@@ -164,10 +194,12 @@ int main() {
 							card->suit = 1;
 						}
 						else {
+							error_msg = "invalid suit";
 							error_flag = true;
 						}
 					}
 					catch (exception& e) {
+						error_msg = "Hand empty when it shouldn't be, implies invalid input";
 						error_flag = true;
 					}
 				}
@@ -188,6 +220,8 @@ int main() {
 						card->value = 13; // King
 					}
 					else {
+						cout << "c";
+						error_msg = "not A,J,Q, or K";
 						error_flag = true;
 					}
 				}
@@ -198,27 +232,34 @@ int main() {
 					separator_type = c;
 				}
 				else if (c != separator_type) {
+					error_msg = "Inconsistent separator type";
 					error_flag = true;
 				}
 
 				if (processing_card) {
 					// end card
 					hand->cards.push_back(card);
+					// DEBUG: cout << "adding card: " << card->value << "," << card->suit << endl;
 					card = NULL;
 					processing_card = false;
 				}
 				else {
 					// two spacers in a row, error
+					error_msg = "two spacers in a row";
 					error_flag = true;
 				}
 
 			}
 			else {
+				error_msg = "unrecognized input";
 				error_flag = true;
 			}
 
+
+
 			if (error_flag) {
 				hand->output = "Invalid: " + hand->input;
+				cout << "error flag thrown" << endl;
 				break;
 			}
 		}
@@ -232,6 +273,7 @@ int main() {
 					card2 = hand->cards[k];
 					if (card1->value == card2->value && card1->suit == card2->suit) {
 						error_flag = true;
+						error_msg = "duplicate cards in hand";
 						break;
 					}
 				}
@@ -242,6 +284,7 @@ int main() {
 		// check for invalid input: not a full hand
 		if (hand->cards.size() != NUM_CARDS) {
 			error_flag = true;
+			error_msg = "not enough cards";
 		}
 
 		if (error_flag) {
