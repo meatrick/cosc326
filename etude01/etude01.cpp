@@ -10,7 +10,7 @@
 
 using namespace std;
 
-enum charType { upper_letter, lower_letter, at, underscore, dot, hyphen, number, unrecognized };
+enum charType { upper_letter, lower_letter, at, underscore, dot, hyphen, number, unrecognized, bracket };
 const string domain_names[] = { "co.nz" , "com.au", "co.ca", "com", "co.us", "co.uk" };
 
 struct Email {
@@ -50,6 +50,9 @@ charType getCharType(char c) {
 	else if (c >= 48 && c <= 57) {
 		type = number;
 	}
+	else if (c == 91 || c == 93) {
+		type = bracket;
+	}
 	else {
 		type = unrecognized;
 	}
@@ -73,6 +76,9 @@ int main() {
 
 	// get input
 	while (getline(cin, line_in)) {
+
+		if (line_in.empty()) continue; // skip if the line is empty
+
 		Email* email = new Email(line_in);
 		emails.push_back(email);
 	}
@@ -84,6 +90,7 @@ int main() {
 
 		try {
 			string line = email->input;
+			bool uses_sq_brackets = false;
 
 			// convert all _at_ and _dot_
 			while (true) {
@@ -125,39 +132,83 @@ int main() {
 				throw "missing @";
 			}
 
-
-			// check that there are valid domain and mailbox names
-			size_t at_pos = line.find("@");
-			charType type1 = getCharType(line[at_pos + 1]);
-
-			if (!isValidDomainType(type1)) {
-				throw "Invalid domain name";
-			}
-
+			// check for valid mailbox name
 			charType type2 = getCharType(line[0]);
 			if (!isValidDomainType(type2)) {
 				throw "Invalid mailbox name";
 			}
 
+			// find @ pos, used for checking position of [...] and domain name
+			size_t at_symbol_pos = line.find("@");
+			charType char_type_after_at_symbol = getCharType(line[at_symbol_pos + 1]);
 
 
-			// TODO: check for valid domain extension
-			bool valid_ext = false;
-			for (int i = 0; i < NUM_VALID_DOMAIN_NAMES; i++) {
-				string domain_ext = domain_names[i];
-				size_t ext_size = domain_ext.size();
-				size_t extension_pos = line.find(domain_ext);
-				size_t last_pos = line.size() - 1;
-				if (extension_pos != string::npos) {
-					valid_ext = true;
-					if (extension_pos + ext_size != last_pos + 1) {
-						valid_ext = false; // not in the last position
-					}
-					else break;
+			// look for [...] domain name & extension
+			size_t num_left_brackets = 0, num_right_brackets = 0;
+			// count num of brackets
+			for (int i = 0; i < line.size(); i++) {
+				if (line[i] == 91) {
+					num_left_brackets++;
+				}
+				else if (line[i] == 93) {
+					num_right_brackets++;
 				}
 			}
-			if (!valid_ext) {
-				throw "no valid domain extension";
+			if (num_left_brackets != num_right_brackets) {
+				throw "brackets do not match";
+			}
+			if (num_left_brackets > 1 || num_right_brackets > 1) {
+				throw "too many brackets";
+			}
+			if (num_left_brackets == 1 && num_right_brackets == 1) { // valid brackets
+				uses_sq_brackets = true;
+
+				size_t left_bracket_pos = line.find("[");
+				size_t right_bracket_pos = line.find("]");
+
+				// discount if the right bracket is not at the end of the line
+				if (right_bracket_pos != line.size() - 1) {
+					throw "right square bracket not at end of line";
+				}
+
+				// check the contents inside the brackets
+				for (int i = left_bracket_pos + 1; i < right_bracket_pos; i++) {
+					charType type = getCharType(line[i]);
+					if (type != dot && type != number) {
+						throw "contents of domain bracket invalid";
+					}
+				}
+
+			}
+
+
+			if (!uses_sq_brackets) {
+
+				// check that there is a valid domain name
+				if (!isValidDomainType(char_type_after_at_symbol)) {
+					throw "Invalid domain name";
+				}
+
+
+				// for each potential domain extension, search for it
+				bool valid_ext = false;
+				for (int i = 0; i < NUM_VALID_DOMAIN_NAMES; i++) {
+					string domain_ext = domain_names[i];
+					size_t ext_size = domain_ext.size();
+					size_t extension_pos = line.find(domain_ext);
+					size_t last_pos = line.size() - 1;
+					if (extension_pos != string::npos) {
+						valid_ext = true;
+						if (extension_pos + ext_size != last_pos + 1) {
+							throw "domain extension not at end of input";
+						}
+						else break;
+					}
+				}
+
+				if (!valid_ext) {
+					throw "no valid domain extension";
+				}
 			}
 
 
