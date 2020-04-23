@@ -19,14 +19,17 @@ int main() {
 
 	// take input in form of: scale r g b
 	string line;
-
+	stringstream ss;
 	while (getline(cin, line)) {
 		double scale;
 		unsigned char r, g, b;
-		stringstream ss(line);
+		ss.str(line);
 		line >> scale >> r >> g >> b;
 		Layer* layer = new Layer(scale, r, g, b);
 		layers.push_back(layer);
+		ss.clear();
 	}
+
+	// 
 
 }
