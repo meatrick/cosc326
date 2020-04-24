@@ -50,14 +50,6 @@ struct {
 } cardSort;
 //use sort(s.begin(), s.end(), cardSort)
 
-// trim function from stack overflow
-string trim(string& str)
-{
-	size_t first = str.find_first_not_of(' ');
-	size_t last = str.find_last_not_of(' ');
-	return str.substr(first, (last - first + 1));
-}
-
 
 int main() {
 	string line = "";
@@ -65,7 +57,6 @@ int main() {
 
 	// 1: Read the line of input
 	while (getline(cin, line)) {
-		line = trim(line);
 		Hand* hand = new Hand(line);
 		hands.push_back(hand);
 	}
@@ -82,6 +73,11 @@ int main() {
 
 
 		int len = line.size();
+
+		if (line[0] == ' ' || line[len - 1] == ' ') {
+			error_flag = true;
+		}
+
 		for (int i = 0; i < len; i++) {
 			char c = line[i];
 
@@ -246,7 +242,6 @@ int main() {
 
 		if (error_flag) {
 			hand->output = "Invalid: " + hand->input;
-			cout << error_msg << endl;
 		}
 
 
@@ -282,5 +277,4 @@ int main() {
 		cout << hand->output << endl;
 
 	}
-	cout << endl;
 }
