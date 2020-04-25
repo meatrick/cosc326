@@ -57,22 +57,22 @@ public:
 	Node* left_child = NULL; // plus
 	Node* right_child = NULL; // multiplication
 	int init_value;
-	int id;
 	bool visited = false;
 	int product;
 
-	Node(int id_, int init_value_) {
-		id = id_;
+	Node(int init_value_) {
 		init_value = init_value_;
 		product = init_value;
 	}
 
 	void attach_left_child(Node* child) {
 		left_child = child;
+		child->parent = this;
 	}
 
 	void attach_right_child(Node* child) {
 		right_child = child;
+		child->parent = this;
 	}
 
 	bool is_leaf() {
@@ -80,18 +80,12 @@ public:
 	}
 };
 
-class NodeL : public Node {
-public:
-	int product;
-
-	// NodeL(int init_value) : Node(init_value) {
-	//     product = init_value;
-	// } 
-
-};
 
 class NodeN : public Node {
 public:
+	NodeN(int init_value) : Node(init_value) {
+
+	}
 	vector<int> operands;
 };
 
@@ -117,13 +111,14 @@ public:
 	}
 };
 
-class EdgeL : public Edge {
-public:
-};
 
 class EdgeN : public Edge {
 public:
 	int operand;
+
+	EdgeN(NodeN* parent_, NodeN* child_, int operator_type_, int operand_) : Edge(parent_, child_, operator_type_) {
+		operand = operand_;
+	}
 };
 
 class Tree {
@@ -136,13 +131,12 @@ public:
 		root = root_;
 	}
 
-	void create_edge(Node* parent, Node* child, int operator_type) {
-		cout << operator_type << endl;
+	virtual void create_edge(Node* parent, Node* child, int operator_type) {
 		Edge* edge = new Edge(parent, child, operator_type);
 		edges.push_back(edge);
 	}
 
-	Tree(vector<int> input_numbers) {
+	virtual void load(vector<int> input_numbers) {
 		vector<int> tree_list;
 		for (int i = 0; i < input_numbers.size(); i++) {
 			for (int j = 0; j < pow(2, i); j++) {
@@ -151,7 +145,7 @@ public:
 		}
 
 		for (int i = 0; i < tree_list.size(); i++) {
-			Node* node = new Node(i, tree_list[i]);
+			Node* node = new Node(tree_list[i]);
 			if (i == 0) {
 				set_root(node);
 			}
@@ -167,7 +161,7 @@ public:
 		}
 	}
 
-	string to_string() {
+	virtual string to_string() {
 		string str = "";
 
 		for (Edge* edge : edges) {
@@ -178,10 +172,60 @@ public:
 
 };
 
-class TreeL : public Tree {
-};
+
 
 class TreeN : public Tree {
+public:
+	vector<NodeN*> nodes;
+	vector<EdgeN*> edges;
+	NodeN* root;
+
+	void create_edge(NodeN* parent, NodeN* child, int operator_type, int operand) {
+		EdgeN* edge = new EdgeN(parent, child, operator_type, operand);
+		edges.push_back(edge);
+	}
+
+	void load(vector<int> input_numbers) {
+		vector<int> tree_list;
+		for (int i = 0; i < input_numbers.size(); i++) {
+			for (int j = 0; j < pow(2, i); j++) {
+				tree_list.push_back(input_numbers[i]);
+			}
+		}
+
+		for (int i = 0; i < tree_list.size(); i++) {
+			NodeN* node = new NodeN(tree_list[i]);
+			if (i == 0) {
+				set_root(node);
+			}
+			nodes.push_back(node);
+		}
+
+		for (int i = 0; i < nodes.size() / 2; i++) {
+			int index_of_left_child = i * 2 + 1;
+			int index_of_right_child = index_of_left_child + 1;
+
+			NodeN* l_child = nodes[index_of_left_child];
+			NodeN* r_child = nodes[index_of_right_child];
+			int l_val = l_child->init_value;
+			int r_val = r_child->init_value;
+
+			create_edge(nodes[i], nodes[index_of_left_child], 0, l_val);
+			create_edge(nodes[i], nodes[index_of_right_child], 1, r_val);
+		}
+	}
+
+	string to_string() {
+		string str = "";
+
+		for (EdgeN* edge : edges) {
+			str += "{" + std::to_string(edge->parent->init_value) + ", " + std::to_string(edge->child->init_value) + ", "
+				+ std::to_string(edge->operator_type) + ", " + std::to_string(edge->operand) + "}\n";
+		}
+		return str;
+	}
+
+
 };
 
 Node* DFS(Tree* t, Node* start_node, int target_value) {
@@ -212,6 +256,7 @@ Node* DFS(Tree* t, Node* start_node, int target_value) {
 			}
 		}
 	}
+	cout << "node: " << start_node->init_value << ", " << start_node->product << " returning null" << endl;
 	return NULL;
 }
 
@@ -219,21 +264,47 @@ Node* DFS(Tree* t, Node* start_node, int target_value) {
 string find_solution(Tree* t, int target_value) {
 	Node* node = DFS(t, t->root, target_value);
 
+
+	if (!node) {
+		return "-1";
+	}
+
+	cout << "init_value of sol. node: " << node->init_value << endl;
+	cout << "final val of sol. node: " << node->product << endl;
+
 	string bitstring = "";
 
 	vector<Node*> path;
 	path.push_back(node);
 	while (node->parent) {
+		cout << " parent" << endl;
 		node = node->parent;
 		path.push_back(node);
 	}
 
 	reverse(path.begin(), path.end());
 
+
+
 	for (int i = 0; i < path.size(); i++) {
-		if ()
+		Node* parent = path[i];
+		cout << "init_val and product: " << parent->init_value << ", " << parent->product << endl;
+		if (!parent->is_leaf()) {
+			Node* child = path[i + 1];
+			if (child == parent->left_child) {
+				bitstring += "0";
+			}
+			else if (child == parent->right_child) {
+				bitstring += "1";
+			}
+		}
 	}
 
+	return bitstring;
+
+}
+
+string find_solutionN(TreeN* t, int target_value) {
 
 }
 
@@ -284,14 +355,15 @@ int main() {
 		vector<int> input_numbers = sc->numbers;
 
 		if (sc->order_mode == "L") {
-			Tree* t = new Tree(sc->numbers); // create tree
-
-
-
-
+			Tree* t = new Tree(); // create tree
+			t->load(sc->numbers);
+			string solution_str = find_solution(t, sc->target_value);
+			sc->set_solution(solution_str);
 		}
 		else if (sc->order_mode == "N") {
-
+			TreeN* t = new TreeN();
+			t->load(sc->numbers);
+			string solution_str = find_solutionN(t, sc->target_value);
 		}
 
 
