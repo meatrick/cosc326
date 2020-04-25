@@ -5,7 +5,7 @@
 #include <sstream>
 #include <cstring>
 #include <vector>
-#include <algorithm>
+#include <algorithm> // for reversing vectors
 
 using namespace std;
 
@@ -21,7 +21,7 @@ struct Scenario {
 		// init
 	}
 
-	// method: given a scenario object and a solution, create the output for the solution
+	// method: given a scenario object and a solution in the form of a bitstring, create the output for the solution
 	// if the solution is -1, do the "impossible" output
 	// else ...
 	void set_solution(string solution) {
@@ -51,19 +51,375 @@ struct Scenario {
 	}
 };
 
+class Node {
+public:
+	Node* parent = NULL;
+	Node* left_child = NULL; // plus
+	Node* right_child = NULL; // multiplication
+	int init_value;
+	bool visited = false;
+	int product;
+
+	Node(int init_value_) {
+		init_value = init_value_;
+		product = init_value;
+	}
+
+	virtual void attach_left_child(Node* child) {
+		left_child = child;
+		child->parent = this;
+	}
+
+	virtual void attach_right_child(Node* child) {
+		right_child = child;
+		child->parent = this;
+	}
+
+	virtual bool is_leaf() {
+		return !(left_child && right_child);
+	}
+};
 
 
-string increment_bitstring(string bitstring) {
-	size_t len = bitstring.size();
-	char lsb = bitstring[len - 1];
-	if (lsb == '0') {
-		bitstring[len - 1] = '1';
+class NodeN {
+public:
+	NodeN* parent = NULL;
+	NodeN* left_child = NULL;
+	NodeN* right_child = NULL;
+	bool visited = false;
+	int init_value;
+	int product;
+	vector<int> operands;
+
+	NodeN(int init_value_) {
+		init_value = init_value_;
+		product = init_value;
+	}
+
+	void attach_left_child(NodeN* child) {
+		left_child = child;
+		child->parent = this;
+	}
+
+	void attach_right_child(NodeN* child) {
+		right_child = child;
+		child->parent = this;
+	}
+
+	bool is_leaf() {
+		return !(left_child && right_child);
+	}
+};
+
+
+
+class Edge {
+public:
+	Node* parent;
+	Node* child;
+	int operator_type;
+
+	Edge(Node* parent_, Node* child_, int operator_type_) {
+		parent = parent_;
+		child = child_;
+		operator_type = operator_type_;
+
+		if (operator_type == 0) {
+			parent->attach_left_child(child);
+		}
+		else if (operator_type == 1) {
+			parent->attach_right_child(child);
+		}
+	}
+};
+
+
+class EdgeN {
+public:
+	NodeN* parent;
+	NodeN* child;
+	int operand;
+	int operator_type;
+
+	EdgeN(NodeN* parent_, NodeN* child_, int operator_type_, int operand_) {
+		parent = parent_;
+		NodeN* child = child_;
+		operator_type = operator_type_;
+		operand = operand_;
+
+		if (operator_type == 0) {
+			parent->attach_left_child(child);
+		}
+		else if (operator_type == 1) {
+			parent->attach_right_child(child);
+		}
+	}
+};
+
+class Tree {
+public:
+	vector<Node*> nodes;
+	vector<Edge*> edges;
+	Node* root;
+
+	virtual void set_root(Node* root_) {
+		root = root_;
+	}
+
+	virtual void create_edge(Node* parent, Node* child, int operator_type) {
+		Edge* edge = new Edge(parent, child, operator_type);
+		edges.push_back(edge);
+	}
+
+	virtual void load(vector<int> input_numbers) {
+		vector<int> tree_list;
+		for (int i = 0; i < input_numbers.size(); i++) {
+			for (int j = 0; j < pow(2, i); j++) {
+				tree_list.push_back(input_numbers[i]);
+			}
+		}
+
+		for (int i = 0; i < tree_list.size(); i++) {
+			Node* node = new Node(tree_list[i]);
+			if (i == 0) {
+				set_root(node);
+			}
+			nodes.push_back(node);
+		}
+
+		for (int i = 0; i < nodes.size() / 2; i++) {
+			int index_of_left_child = i * 2 + 1;
+			int index_of_right_child = index_of_left_child + 1;
+
+			create_edge(nodes[i], nodes[index_of_left_child], 0);
+			create_edge(nodes[i], nodes[index_of_right_child], 1);
+		}
+	}
+
+	virtual string to_string() {
+		string str = "";
+
+		for (Edge* edge : edges) {
+			str += "{" + std::to_string(edge->parent->init_value) + ", " + std::to_string(edge->child->init_value) + ", " + std::to_string(edge->operator_type) + "}\n";
+		}
+		return str;
+	}
+
+};
+
+
+
+class TreeN : public Tree {
+public:
+	vector<NodeN*> nodes;
+	vector<EdgeN*> edges;
+	NodeN* root;
+
+	void create_edge(NodeN* parent, NodeN* child, int operator_type, int operand) {
+		EdgeN* edge = new EdgeN(parent, child, operator_type, operand);
+		edges.push_back(edge);
+	}
+
+	void set_root(NodeN* root_) {
+		root = root_;
+		root->operands.push_back(root->init_value);
+	}
+
+	void load(vector<int> input_numbers) {
+		vector<int> tree_list;
+		for (int i = 0; i < input_numbers.size(); i++) {
+			for (int j = 0; j < pow(2, i); j++) {
+				tree_list.push_back(input_numbers[i]);
+			}
+		}
+
+		for (int i = 0; i < tree_list.size(); i++) {
+			NodeN* node = new NodeN(tree_list[i]);
+			if (i == 0) {
+				set_root(node);
+			}
+			nodes.push_back(node);
+		}
+
+		for (int i = 0; i < nodes.size() / 2; i++) {
+			int index_of_left_child = i * 2 + 1;
+			int index_of_right_child = index_of_left_child + 1;
+
+			NodeN* l_child = nodes[index_of_left_child];
+			NodeN* r_child = nodes[index_of_right_child];
+			int l_val = l_child->init_value;
+			int r_val = r_child->init_value;
+
+			create_edge(nodes[i], nodes[index_of_left_child], 0, l_val);
+			create_edge(nodes[i], nodes[index_of_right_child], 1, r_val);
+		}
+	}
+
+	string to_string() {
+		string str = "";
+
+		for (EdgeN* edge : edges) {
+			str += "{" + std::to_string(edge->parent->init_value) + ", " + std::to_string(edge->child->init_value) + ", "
+				+ std::to_string(edge->operator_type) + ", " + std::to_string(edge->operand) + "}\n";
+		}
+		return str;
+	}
+
+
+};
+
+Node* DFS(Tree* t, Node* start_node, int target_value) {
+	start_node->visited = true;
+
+	// base case
+	if (start_node->is_leaf()) {
+		if (start_node->product == target_value) {
+			return start_node;
+		}
 	}
 	else {
-		bitstring = increment_bitstring(bitstring.substr(0, len - 1));
-		bitstring += '0';
+		Node* l_child = start_node->left_child;
+		Node* r_child = start_node->right_child;
+
+		if (!l_child->visited) {
+			l_child->product += start_node->product;
+			Node* solution = DFS(t, l_child, target_value);
+			if (solution) {
+				return solution;
+			}
+		}
+		if (!r_child->visited) {
+			r_child->product *= start_node->product;
+			Node* solution = DFS(t, r_child, target_value);
+			if (solution) {
+				return solution;
+			}
+		}
+	}
+	// cout << "node: " << start_node->init_value << ", " << start_node->product << " returning null" << endl;
+	return NULL;
+}
+
+NodeN* DFSN(TreeN* t, NodeN* start_node, int target_value) {
+	start_node->visited = true;
+
+	cout << "starting DFSN" << endl;
+
+	// base case
+	if (start_node->is_leaf()) {
+		cout << "base case, found leaf node: " << endl;
+		int sum = 0;
+		for (int i = 0; i < start_node->operands.size(); i++) {
+			sum += start_node->operands[i];
+		}
+
+		if (sum == target_value) {
+			return start_node;
+		}
+	}
+	else {
+		NodeN* l_child = start_node->left_child;
+		NodeN* r_child = start_node->right_child;
+
+		cout << "not leaf node" << endl;
+
+		if (!l_child->visited) {
+			cout << "l_child not visited" << endl;
+			l_child->operands = start_node->operands;
+			l_child->operands.push_back(l_child->init_value);
+			NodeN* solution = DFSN(t, l_child, target_value);
+			if (solution) {
+				return solution;
+			}
+		}
+		if (!r_child->visited) {
+			cout << "r child not visited" << endl;
+			r_child->operands = start_node->operands;
+			r_child->operands.back() *= r_child->init_value;
+			NodeN* solution = DFSN(t, r_child, target_value);
+			if (solution) {
+				return solution;
+			}
+		}
+		cout << " hello " << endl;
+	}
+	return NULL;
+}
+// find solution for type L
+string find_solution(Tree* t, int target_value) {
+	Node* node = DFS(t, t->root, target_value);
+
+
+	if (!node) {
+		return "-1";
 	}
 
+	cout << "init_value of sol. node: " << node->init_value << endl;
+	cout << "final val of sol. node: " << node->product << endl;
+
+	string bitstring = "";
+
+	vector<Node*> path;
+	path.push_back(node);
+	while (node->parent) {
+		cout << " parent" << endl;
+		node = node->parent;
+		path.push_back(node);
+	}
+
+	reverse(path.begin(), path.end());
+
+
+
+	for (int i = 0; i < path.size(); i++) {
+		Node* parent = path[i];
+		cout << "init_val and product: " << parent->init_value << ", " << parent->product << endl;
+		if (!parent->is_leaf()) {
+			Node* child = path[i + 1];
+			if (child == parent->left_child) {
+				bitstring += "0";
+			}
+			else if (child == parent->right_child) {
+				bitstring += "1";
+			}
+		}
+	}
+
+	return bitstring;
+
+}
+
+
+string find_solutionN(TreeN* t, int target_value) {
+	NodeN* node = DFSN(t, t->root, target_value);
+
+	if (!node) {
+		return "-1";
+	}
+
+	string bitstring = "";
+
+	vector<NodeN*> path;
+	path.push_back(node);
+	while (node->parent) {
+		node = node->parent;
+		path.push_back(node);
+	}
+
+	reverse(path.begin(), path.end());
+
+	for (int i = 0; i < path.size(); i++) {
+		NodeN* parent = path[i];
+		if (!parent->is_leaf()) {
+			NodeN* child = path[i + 1];
+			if (child == parent->left_child) {
+				bitstring += "0";
+			}
+			else if (child == parent->right_child) {
+				bitstring += "1";
+			}
+		}
+	}
 	return bitstring;
 }
 
@@ -109,202 +465,26 @@ int main() {
 
 
 
-
-
-	/*  TESTING FOR SCENARIO OBJECT AND INPUT READING
-	reverse(scenarios.begin(), scenarios.end());
-	while (!scenarios.empty()) {
-		Scenario* s = scenarios.back();
-		scenarios.pop_back();
-
-		vector<int> numbers = s->numbers;
-		cout << "numbers: ";
-		for (int i = 0; i < numbers.size(); i++) {
-			cout << numbers[i] << " ";
-		}
-		cout << endl;
-		cout << "target: " << s->target_value << endl;
-		cout << "mode: " << s->order_mode << endl;
-
-	}
-	*/
-
 	// do computation for each scenario
 	for (Scenario* sc : scenarios) {
-		// iterate through all permutations of list of numbers
-		vector<int> vec_numbers(sc->numbers);
-		int len = vec_numbers.size();
+		vector<int> input_numbers = sc->numbers;
 
-		// int numbers[len];
-		// copy(vec_numbers.begin(), vec_numbers.end(), numbers);
-		// sort(numbers, numbers + len);
-
-		// create a binary string of length equal to the number of operands - 1
-		string bitstring = "";
-		for (int i = 0; i < len - 1; i++) {
-			bitstring += "0";
-		}
-		cout << "first bitstring: " << bitstring << endl;
-		// this binary string starts at zero
-		// var solution = NULL;
-		string solution = "-1";
-		bool solution_found = false;
-
-		// if LtoR order of operations, do:
 		if (sc->order_mode == "L") {
-			// from 0 to the max number that binary string can go, do:
-			do {
-				// add the first number to the sum
-				int sum = vec_numbers[0];
-				cout << "sum starts with first num: " << sum << endl;
-				cout << "attempting bitstring: " << bitstring << endl;
-				// for each bit of the bitstring, from left to right, do:
-				for (int i = 0; i < len - 1; i++) {
-					cout << "bit " << i << endl;
-					// if the bit reads 0, add the the i+1th number to the sum
-					if (bitstring[i] == '0') {
-						cout << "bit " << i << " is a 0" << endl;
-						cout << "the old sum, " << sum << " + " << vec_numbers[i + 1];
-						sum += vec_numbers[i + 1]; // never out of bounds
-						cout << " makes the new sum: " << sum << endl;
-
-					}
-					// if the bit reads 1, multiply the sum by the i+1th number
-					else if (bitstring[i] == '1') {
-						cout << "bit " << i << " is a 1" << endl;
-						cout << "the old sum, " << sum << " * " << vec_numbers[i + 1];
-						sum *= vec_numbers[i + 1];
-						cout << " makes the new sum: " << sum << endl;
-					}
-				}
-				// if the sum is equal to the goal number, set a flag, save the bitstring, and break from the loop
-				if (sum == sc->target_value) {
-					cout << "Sum equals target!" << endl;
-					solution_found = true;
-					solution = bitstring;
-					break;
-				}
-				else {
-					cout << "iteration ended. The current bitstring is: " << bitstring << endl;
-					// else, continue (increment bitstring)
-					// terminate loop if this iteration was "11....1"
-					size_t found = bitstring.find("0");
-					if (found == string::npos) {
-						break;
-					}
-					// otherwise, increment
-					bitstring = increment_bitstring(bitstring);
-
-					cout << "the new bitstring is: " << bitstring << endl;
-				}
-
-			} while (true);
+			Tree* t = new Tree(); // create tree
+			t->load(sc->numbers);
+			string solution_str = find_solution(t, sc->target_value);
+			sc->set_solution(solution_str);
 		}
-
-		// else if normal order of operations, do:
 		else if (sc->order_mode == "N") {
-			// save the original bitstring and make a copy of the bistring
-
-			// len = size of bitstring + 1 (number of operands)
-
-			bool repeat = false;
-			// from 0 to the max number that the binary string can go, do:
-			do {
-				vector<int> vec_numbers_cpy(vec_numbers);
-				cout << "attempting bitstring: " << bitstring << endl;
-				int bitstring_len = bitstring.size();
-				string bitstring_cpy = bitstring;
-				int sum = 0;
-
-				// for i = 0 to len - 1, do:
-				for (int i = 0; i < bitstring_len; i++) {
-					cout << "iteration: " << i << endl;
-					cout << "working bitstring copy: " << bitstring_cpy << endl;
-					// if there are only +'s left:
-					size_t find = bitstring_cpy.find("1");
-					if (find == string::npos) {
-						cout << "adding everything together now " << endl;
-						// all the multiplications are gone.  Do a pass and add everything together
-						while (!vec_numbers_cpy.empty()) {
-							sum += vec_numbers_cpy.back();
-							vec_numbers_cpy.pop_back();
-						}
-						cout << "the sum is " << sum << endl;
-						break;
-					}
-					// if the bit = 0:
-					if (bitstring_cpy[i] == '0') {
-						cout << "bit " << i << " of bitstring_cpy " << bitstring_cpy << " is 0" << endl;
-						// continue to the next bit
-						continue;
-					}
-					// else if the bit = 1:
-					else if (bitstring_cpy[i] == '1') {
-						cout << "vector copy size: " << vec_numbers_cpy.size() << endl;
-						cout << "bit " << i << " of bitstring_cpy " << bitstring_cpy << " is 1" << endl;
-						cout << "number at index " << i << " is " << vec_numbers_cpy[i] << endl;
-						cout << "number at index " << i + 1 << " is " << vec_numbers_cpy[i + 1] << endl;
-						vec_numbers_cpy[i] *= vec_numbers_cpy[i + 1];
-						// erase bit i from the bitstring and erase vec[i+1] from the vector of numbers
-						bitstring_cpy.erase(i, 1);
-						int pos_to_erase = i + 1;
-						vec_numbers_cpy.erase(vec_numbers_cpy.begin() + pos_to_erase);
-						// erase manually by making a copy of the vector:
-						// vector<int> vec;
-						// for (int j = 0; j < vec_numbers_cpy.size(); j++) {
-						//     cout << "TEST" << endl;
-						//     if (j == i + 1) {
-						//         cout << "skipping copy at index " << j << endl;
-						//         continue;
-						//     }
-						//     cout << "pushing " << vec_numbers_cpy[j] << endl;
-						//     vec.push_back(vec_numbers_cpy[j]);
-						// }
-						// vec_numbers_cpy = vec;
-
-						// cout << "Find seg fault" << endl;
-						bool repeat = true;
-						bitstring_len = bitstring_cpy.size();
-						cout << "the bitstring is now: " << bitstring_cpy << endl;
-						cout << "bitstring len is now: " << bitstring_len << endl;
-						cout << "after multiplcation, number " << i << " is " << vec_numbers_cpy[i] << endl;
-						//<< " and number " << i+1 << " is " << vec_numbers_cpy[i+1] << endl; casues out of bounds error
-
-						// if (repeat)
-						if (repeat) {
-							cout << "repeating" << endl;
-							i = i - 2;
-							repeat = false;
-							continue;
-						}
-					}
-				}
-				// if sum == goal:
-				if (sum == sc->target_value) {
-					cout << "we've got a match!" << endl;
-					// save original bitstring, set a flag, break from the loop
-					solution = bitstring;
-					solution_found = true;
-					break;
-				}
-				// else, continue to the next bitstring
-				else {
-					// terminate loop if this iteration was "11....1"
-					size_t found = bitstring.find("0");
-					if (found == string::npos) {
-						break;
-					}
-					// otherwise, increment
-					cout << "the bitstring is incremented from " << bitstring;
-					bitstring = increment_bitstring(bitstring);
-					cout << " to " << bitstring << endl;
-				}
-
-			} while (true);
+			TreeN* t = new TreeN();
+			t->load(sc->numbers);
+			string solution_str = find_solutionN(t, sc->target_value);
+			sc->set_solution(solution_str);
 		}
 
 
-		sc->set_solution(solution);
+
+
 
 	}
 
