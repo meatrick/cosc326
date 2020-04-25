@@ -5,6 +5,7 @@
 #include <map>
 #include <algorithm>
 #include <cassert>
+#include<sstream>
 
 #define NUM_VALID_DOMAIN_NAMES 6
 
@@ -163,8 +164,8 @@ int main() {
 			if (num_left_brackets == 1 && num_right_brackets == 1) { // valid brackets
 				uses_sq_brackets = true;
 
-				size_t left_bracket_pos = line.find("[");
-				size_t right_bracket_pos = line.find("]");
+				int left_bracket_pos = line.find("[");
+				int right_bracket_pos = line.find("]");
 
 				// discount if the right bracket is not at the end of the line
 				if (right_bracket_pos != line.size() - 1) {
@@ -172,10 +173,68 @@ int main() {
 				}
 
 				// check the contents inside the brackets
+				int num_dots = 0;
+				int num_of_digits_since_last_dot = 0;
+				vector<int> dot_positions;
+				// stoi()
+
+				cout << "line: " << line << endl;
 				for (int i = left_bracket_pos + 1; i < right_bracket_pos; i++) {
+					cout << "i: " << i << endl;
 					charType type = getCharType(line[i]);
 					if (type != dot && type != number) {
 						throw "contents of domain bracket invalid";
+					}
+
+					if (num_of_digits_since_last_dot == 0 && type == dot) {
+						throw "invalid domain format: consecutive dots";
+					}
+
+					if (type == dot) {
+						cout << "type = dot" << endl;
+						num_of_digits_since_last_dot = 0;
+						dot_positions.push_back(i);
+						num_dots++;
+						if (num_dots > 3) {
+							throw "invalid domain format: too many dots";
+						}
+					}
+					else {
+						cout << "type = number" << endl;
+						num_of_digits_since_last_dot++;
+					}
+
+
+				}
+				if (num_dots != 3 || num_of_digits_since_last_dot == 0) {
+					throw "invalid domain syntax";
+				}
+
+				// first bit
+				string num;
+				vector<int> ip_nums;
+				for (int i = left_bracket_pos + 1; i < dot_positions[1]; i++) {
+					num += line[i];
+				}
+				ip_nums.push_back(stoi(num));
+
+				cout << "where is the segfault" << endl;
+				// 2nd and 3rd bit
+				for (int j = 0; j < 2; j++) {
+					for (int i = dot_positions[j + 1] + 1; i < dot_positions[j + 2]; i++) {
+						num += line[i];
+					}
+					ip_nums.push_back(stoi(num));
+				}
+				// 4th bit
+				for (int i = dot_positions[3]; i < right_bracket_pos; i++) {
+					num += line[i];
+				}
+				ip_nums.push_back(stoi(num));
+
+				for (int i = 0; i < ip_nums.size(); i++) {
+					if (ip_nums[i] > 255) {
+						throw "invalid bit in IP address";
 					}
 				}
 
