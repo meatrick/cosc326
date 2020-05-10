@@ -93,26 +93,27 @@ int main() {
 			string line = email->input;
 			bool uses_sq_brackets = false;
 
-			// convert all _at_ and _dot_
+			// convert _at_ to @
+			size_t found_at_symbol = line.find("@");
+			size_t found = line.rfind("_at_");
+
+			if (found_at_symbol != string::npos) {
+				// do nothing
+			}
+			else if (found != string::npos) {
+				line.replace(found, 4, "@");
+			}
+
+
+			// replace "_dot_"
 			while (true) {
-				bool found_at = false, found_dot = false;
-
-				size_t found = line.find("_at_");
-				if (found != string::npos) {
-					line.replace(found, 4, "@");
-					found_at = true;
-				}
-
-				found = line.find("_dot_");
+				bool found_dot = false;
+				size_t found = line.find("_dot");
 				if (found != string::npos) {
 					line.replace(found, 5, ".");
 					found_dot = true;
 				}
-
-				if (!found_at && !found_dot)
-				{
-					break;
-				}
+				if (!found_dot) break;
 			}
 
 			// check string for correct number of @'s
