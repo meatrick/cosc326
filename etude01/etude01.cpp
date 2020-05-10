@@ -176,6 +176,7 @@ int main() {
 				int num_dots = 0;
 				int num_of_digits_since_last_dot = 0;
 				vector<int> dot_positions;
+				dot_positions.clear();
 				// stoi()
 
 				cout << "line: " << line << endl;
@@ -211,26 +212,35 @@ int main() {
 				}
 
 				// first bit
-				string num;
+				string num = "";
 				vector<int> ip_nums;
-				for (int i = left_bracket_pos + 1; i < dot_positions[1]; i++) {
+				ip_nums.clear();
+				for (int i = left_bracket_pos + 1; i < dot_positions[0]; i++) {
 					num += line[i];
+					// cout << line[i] << endl;
 				}
+				cout << num << endl;
 				ip_nums.push_back(stoi(num));
+				num = "";
 
-				cout << "where is the segfault" << endl;
 				// 2nd and 3rd bit
 				for (int j = 0; j < 2; j++) {
-					for (int i = dot_positions[j + 1] + 1; i < dot_positions[j + 2]; i++) {
+					for (int i = dot_positions[j] + 1; i < dot_positions[j + 1]; i++) {
 						num += line[i];
+						// cout << line[i] << endl;
 					}
+					cout << num << endl;
 					ip_nums.push_back(stoi(num));
+					num = "";
 				}
 				// 4th bit
-				for (int i = dot_positions[3]; i < right_bracket_pos; i++) {
+				for (int i = dot_positions[2] + 1; i < right_bracket_pos; i++) {
 					num += line[i];
+					// cout << line[i] << endl;
 				}
+				cout << num << endl;
 				ip_nums.push_back(stoi(num));
+
 
 				for (int i = 0; i < ip_nums.size(); i++) {
 					if (ip_nums[i] > 255) {
