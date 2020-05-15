@@ -104,8 +104,18 @@ int main() {
 				line.replace(found, 4, "@");
 			}
 
+			// replace _dot_dot	
+			while (true) {
+				bool found_dot_dot = false;
+				size_t found = line.find("_dot_dot");
+				if (found != string::npos) {
+					line.replace(found, 8, "..");
+					found_dot_dot = true;
+				}
+				if (!found_dot_dot) break;
+			}
 
-			// replace "_dot_"
+			// replace "_dot"
 			while (true) {
 				bool found_dot = false;
 				size_t found = line.find("_dot");
@@ -114,6 +124,55 @@ int main() {
 					found_dot = true;
 				}
 				if (!found_dot) break;
+			}
+
+			// replace "_dot_" 
+			// not accounting for the extra space added when adding the previous '.'
+			// vector<size_t> dot_positions;
+			// string line_cpy = line;
+			// int i = 0;
+			// while (true) {
+			// 	size_t found = line_cpy.find("_dot_");
+			// 	if (found != string::npos) {
+			// 		if (i == 0) {
+			// 			dot_positions.push_back(found);
+			// 		} else {
+			// 			dot_positions.push_back(found + dot_positions[i-1] + 4);
+			// 		}
+			// 		line_cpy = line_cpy.substr(found+3);
+			// 		i++;
+			// 	} else {
+			// 		break;
+			// 	}
+			// }
+			// if (dot_positions.size() == 1) {
+			// 	line.replace(dot_positions[0], 5, ".");	
+			// } else {
+			// 	for (int i = 0; i < dot_positions.size(); i++) {
+			// 		if (i != dot_positions.size() - 1) {
+			// 			if (dot_positions[i+1] - dot_positions[i] == 4) {
+			// 				throw "double separator";
+			// 			} else {
+			// 				line.replace(dot_positions[i], 5, ".");
+			// 			}
+			// 		} else {
+			// 			line.replace(dot_positions[i], 5, ".");
+			// 		}
+			// 	}
+			// }
+
+
+
+			// check for double dots
+			for (size_t i = 0; i < line.size(); i++) {
+				char c = line[i];
+				charType type = getCharType(c);
+				if (type == dot) {
+					charType type1 = getCharType(line[i + 1]);
+					if (type1 == dot) {
+						throw "double separator";
+					}
+				}
 			}
 
 			// check string for correct number of @'s
@@ -180,9 +239,7 @@ int main() {
 				dot_positions.clear();
 				// stoi()
 
-				cout << "line: " << line << endl;
 				for (int i = left_bracket_pos + 1; i < right_bracket_pos; i++) {
-					cout << "i: " << i << endl;
 					charType type = getCharType(line[i]);
 					if (type != dot && type != number) {
 						throw "contents of domain bracket invalid";
@@ -193,7 +250,6 @@ int main() {
 					}
 
 					if (type == dot) {
-						cout << "type = dot" << endl;
 						num_of_digits_since_last_dot = 0;
 						dot_positions.push_back(i);
 						num_dots++;
@@ -202,7 +258,6 @@ int main() {
 						}
 					}
 					else {
-						cout << "type = number" << endl;
 						num_of_digits_since_last_dot++;
 					}
 
@@ -218,9 +273,7 @@ int main() {
 				ip_nums.clear();
 				for (int i = left_bracket_pos + 1; i < dot_positions[0]; i++) {
 					num += line[i];
-					// cout << line[i] << endl;
 				}
-				cout << num << endl;
 				ip_nums.push_back(stoi(num));
 				num = "";
 
@@ -228,18 +281,14 @@ int main() {
 				for (int j = 0; j < 2; j++) {
 					for (int i = dot_positions[j] + 1; i < dot_positions[j + 1]; i++) {
 						num += line[i];
-						// cout << line[i] << endl;
 					}
-					cout << num << endl;
 					ip_nums.push_back(stoi(num));
 					num = "";
 				}
 				// 4th bit
 				for (int i = dot_positions[2] + 1; i < right_bracket_pos; i++) {
 					num += line[i];
-					// cout << line[i] << endl;
 				}
-				cout << num << endl;
 				ip_nums.push_back(stoi(num));
 
 

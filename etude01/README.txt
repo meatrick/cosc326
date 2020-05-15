@@ -17,6 +17,7 @@ smithpm@uscedu
 smithpm@.com
 _at_usc.com
 
+
 CEO@InsuroCorp.com
 maffu@cs.otago.ac.nz
 gerry_at_research.techies_dot_co.uk
@@ -28,6 +29,18 @@ cath@]139.80.91.50]
 cath@[139.80.91.50
 cath@[abc.127]
 c
+cath@[129..80.91.50]
+cath@[1.5.6.7]
+cath@[139.80.91.]
+cath@[1398.91.42.255]
+cath@[123.89.255.42.63]
+cath@[256.256.256.256]
+dave_at_home@gmail.com
+
+smithpm@.edu
+smithpm@ .edu
+smithpm@usc..edu
+dave_at_home_at_gmail.com
 
 resources used:
 cppreference.com
