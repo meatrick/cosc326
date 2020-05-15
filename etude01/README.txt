@@ -41,6 +41,8 @@ smithpm@.edu
 smithpm@ .edu
 smithpm@usc..edu
 dave_at_home_at_gmail.com
+a..b@c.com
+smithpm@a_dot_dot_b.co.nz
 
 resources used:
 cppreference.com
