@@ -1,5 +1,3 @@
-package cosc326;
-
 import java.awt.*;
 import javax.swing.*;
 import java.util.Scanner;
@@ -7,8 +5,8 @@ import java.util.Vector;
 import java.lang.Math;
 
 public class Etude06 {
-	public static final int WINDOW_WIDTH = 1800;
-	public static final int WINDOW_HEIGHT = 1800;
+	public static final int WINDOW_WIDTH = 1000;
+	public static final int WINDOW_HEIGHT = 700;
 	
 	public static class Quilt extends JFrame {
 		Vector<Layer> layers = new Vector<Layer>();
