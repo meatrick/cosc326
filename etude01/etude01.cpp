@@ -104,21 +104,11 @@ int main() {
 				line.replace(found, 4, "@");
 			}
 
-			// replace _dot_dot	
-			while (true) {
-				bool found_dot_dot = false;
-				size_t found = line.find("_dot_dot");
-				if (found != string::npos) {
-					line.replace(found, 8, "..");
-					found_dot_dot = true;
-				}
-				if (!found_dot_dot) break;
-			}
 
 			// replace "_dot"
 			while (true) {
 				bool found_dot = false;
-				size_t found = line.find("_dot");
+				size_t found = line.find("_dot_");
 				if (found != string::npos) {
 					line.replace(found, 5, ".");
 					found_dot = true;
@@ -126,53 +116,19 @@ int main() {
 				if (!found_dot) break;
 			}
 
-			// replace "_dot_" 
-			// not accounting for the extra space added when adding the previous '.'
-			// vector<size_t> dot_positions;
-			// string line_cpy = line;
-			// int i = 0;
-			// while (true) {
-			// 	size_t found = line_cpy.find("_dot_");
-			// 	if (found != string::npos) {
-			// 		if (i == 0) {
-			// 			dot_positions.push_back(found);
-			// 		} else {
-			// 			dot_positions.push_back(found + dot_positions[i-1] + 4);
-			// 		}
-			// 		line_cpy = line_cpy.substr(found+3);
-			// 		i++;
-			// 	} else {
-			// 		break;
-			// 	}
-			// }
-			// if (dot_positions.size() == 1) {
-			// 	line.replace(dot_positions[0], 5, ".");	
-			// } else {
-			// 	for (int i = 0; i < dot_positions.size(); i++) {
-			// 		if (i != dot_positions.size() - 1) {
-			// 			if (dot_positions[i+1] - dot_positions[i] == 4) {
-			// 				throw "double separator";
-			// 			} else {
-			// 				line.replace(dot_positions[i], 5, ".");
-			// 			}
-			// 		} else {
-			// 			line.replace(dot_positions[i], 5, ".");
-			// 		}
-			// 	}
-			// }
 
+			// check for double separators
+			for (size_t i = 1; i < line.size(); i++) {
+				char c_curr = line[i];
+				charType type_curr = getCharType(c_curr);
+				char c_last = line[i-1];
+				charType type_last = getCharType(c_last);
 
-
-			// check for double dots
-			for (size_t i = 0; i < line.size(); i++) {
-				char c = line[i];
-				charType type = getCharType(c);
-				if (type == dot) {
-					charType type1 = getCharType(line[i + 1]);
-					if (type1 == dot) {
-						throw "double separator";
-					}
+				if ((type_last == underscore || type_last == dot || type_last == hyphen)
+				&& (type_curr == underscore || type_curr == dot || type_last == hyphen)) {
+					throw "double separator";
 				}
+				
 			}
 
 			// check string for correct number of @'s
