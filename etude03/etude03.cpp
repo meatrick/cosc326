@@ -6,6 +6,7 @@
 #include <cstring>
 #include <vector>
 #include <algorithm> // for reversing vectors
+#include <cmath>
 
 using namespace std;
 
@@ -15,7 +16,7 @@ struct Scenario {
 	vector<int> numbers;
 	int target_value;
 	string order_mode;
-	string output;
+	string output; // TODO: change to vector<char>
 
 	Scenario() {
 		// init
@@ -24,8 +25,8 @@ struct Scenario {
 	// method: given a scenario object and a solution in the form of a bitstring, create the output for the solution
 	// if the solution is -1, do the "impossible" output
 	// else ...
-	void set_solution(string solution) {
-		if (solution == "-1") { // impossible
+	void set_solution(vector<char> solution_operators) {
+		if (solution_operators[0] == '0') { // impossible
 			this->output = order_mode + " " + to_string(target_value) + " impossible";
 			return;
 		}
@@ -37,14 +38,9 @@ struct Scenario {
 			}
 			else {
 				this->output += to_string(this->numbers[i]) + " ";
-				string str_operator;
-				if (solution[i] == '0') {
-					str_operator = "+";
-				}
-				else {
-					str_operator = "*";
-				}
-				this->output += str_operator + " ";
+				char op = solution_operators[i];
+				this->output += op;
+				this->output += ' ';
 			}
 		}
 
@@ -160,18 +156,19 @@ NodeN* DFSN(vector<NodeN*> tree, NodeN* start_node, int target_value) {
 }
 
 // find solution for type L
-string find_solution(vector<Node*> tree, int target_value) {
+vector<char> find_solution(vector<Node*> tree, int target_value) {
 	Node* root = tree[0];
 
 	Node* node = DFS(tree, root, target_value);
 
+	vector<char> operators;
 
 	if (!node) {
-		return "-1";
+		operators.push_back('0');
+		return operators;
 	}
 
 
-	string bitstring = "";
 
 	vector<Node*> path;
 	path.push_back(node);
@@ -204,29 +201,30 @@ string find_solution(vector<Node*> tree, int target_value) {
 		if (parent->index < tree.size() / 2) {
 			Node* child = path[i + 1];
 			if (child->index == parent->index * 2 + 1) {
-				bitstring += "0";
+				operators.push_back('+');
 			}
 			else if (child->index == parent->index * 2 + 2) {
-				bitstring += "1";
+				operators.push_back('*');
 			}
 		}
 	}
-	return bitstring;
+	return operators;
 }
 
 
-string find_solutionN(vector<NodeN*> tree, int target_value) {
+vector<char> find_solutionN(vector<NodeN*> tree, int target_value) {
 	NodeN* root = tree[0];
 	root->operands.push_back(root->init_value); // initialize operands vector
 
 	NodeN* node = DFSN(tree, root, target_value);
 
+	vector<char> operators;
+
 	if (!node) {
-		return "-1";
+		operators.push_back('0');
+		return operators;
 	}
 
-
-	string bitstring = "";
 
 	vector<NodeN*> path;
 	path.push_back(node);
@@ -259,14 +257,14 @@ string find_solutionN(vector<NodeN*> tree, int target_value) {
 		if (parent->index < tree.size() / 2) {
 			NodeN* child = path[i + 1];
 			if (child->index == parent->index * 2 + 1) {
-				bitstring += "0";
+				operators.push_back('+');
 			}
 			else if (child->index == parent->index * 2 + 2) {
-				bitstring += "1";
+				operators.push_back('*');
 			}
 		}
 	}
-	return bitstring;
+	return operators;
 }
 
 
@@ -326,8 +324,8 @@ int main() {
 				}
 			}
 
-			string solution_str = find_solution(tree, sc->target_value);
-			sc->set_solution(solution_str);
+			vector<char> solution_operators = find_solution(tree, sc->target_value);
+			sc->set_solution(solution_operators);
 		}
 		else if (sc->order_mode == "N") {
 			vector<NodeN*> tree;
@@ -339,8 +337,8 @@ int main() {
 				}
 			}
 
-			string solution_str = find_solutionN(tree, sc->target_value);
-			sc->set_solution(solution_str);
+			vector<char> solution_operators = find_solutionN(tree, sc->target_value);
+			sc->set_solution(solution_operators);
 		}
 
 	}
