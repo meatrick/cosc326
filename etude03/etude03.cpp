@@ -84,27 +84,11 @@ vector<char> DFS(vector<int> input_numbers, unsigned int level, int partial_sum,
 }
 
 vector<char> DFSN(vector<int> input_numbers, unsigned int level, vector<int> operands, vector<char> operators, int target_value) {
-	// cerr << endl << "DFS started: " << endl;
-	// cerr << "level: " << level << endl;
-	// cerr << "operands: ";
-	// for (unsigned int i = 0; i < operands.size(); i++) {
-	// 	cerr << operands[i] << " ";
-	// }
-	// cerr << endl;
-	// cerr << "operators: ";
-	// for (unsigned int i = 0; i < operators.size(); i++) {
-	// 	cerr << operators[i] << " ";
-	// }
-	// cerr << endl;
-
 	// base case: if start_node is a leaf: only additions remain, sum it all up
 	if (level == input_numbers.size() - 1) {
-		// cerr << "base case" << endl;
 		int sum = 0;
 		for (int i = 0; i < operands.size(); i++) {
 			sum += operands[i];
-			// cerr << "sum = ";
-			// cerr << sum << endl;
 		}
 
 		if (sum == target_value) {
@@ -159,17 +143,7 @@ vector<char> find_solutionN(vector<int> input_numbers, int target_value) {
 	vector<int> operands;
 	operands.push_back(input_numbers[0]);
 
-	// cerr << "input numbers: ";
-	// for (int i = 0; i < input_numbers.size(); i++) {
-	// 	cerr << input_numbers[i] << " ";
-	// }
-	// cerr << endl;
-
-	// cerr << "root operand: " << operands[0] << endl;
-
 	vector<char> operators_solution = DFSN(input_numbers, 0, operands, operators, target_value);
-
-	// cerr << "outside of DFSN now" << endl;
 
 	if (operators_solution.empty()) {
 		operators_solution.push_back('0');
