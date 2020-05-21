@@ -272,7 +272,6 @@ int main() {
 
 	// parse input and create Scenarios
 
-	vector<Scenario*> scenarios;
 	string line;
 	Scenario* s = NULL;
 	int line_number = 0;
@@ -301,52 +300,43 @@ int main() {
 			s->target_value = target_value;
 			s->order_mode = order_mode;
 
-			// add the scenario to the list
-			scenarios.push_back(s);
+			
+			vector<int> input_numbers = s->numbers;
+
+			// all processing and output
+
+			if (s->order_mode == "L") {
+				// create array of nodes representing the tree
+				vector<Node*> tree;
+				int index = 0;
+				for (size_t i = 0; i < input_numbers.size(); i++) {
+					for (size_t j = 0; j < pow(2, i); j++) {
+						tree.push_back(new Node(index, input_numbers[i]));
+						index++;
+					}
+				}
+
+				vector<char> solution_operators = find_solution(tree, s->target_value);
+				s->set_solution(solution_operators);
+			}
+			else if (s->order_mode == "N") {
+				vector<NodeN*> tree;
+				int index = 0;
+				for (size_t i = 0; i < input_numbers.size(); i++) {
+					for (size_t j = 0; j < pow(2, i); j++) {
+						tree.push_back(new NodeN(index, input_numbers[i]));
+						index++;
+					}
+				}
+
+				vector<char> solution_operators = find_solutionN(tree, s->target_value);
+				s->set_solution(solution_operators);
+			}
+
+			cout << s->output << endl;
+				
 		}
 		ss.clear();
-	}
-
-
-
-	// do computation for each scenario
-	for (Scenario* sc : scenarios) {
-		vector<int> input_numbers = sc->numbers;
-
-		if (sc->order_mode == "L") {
-			// create array of nodes representing the tree
-			vector<Node*> tree;
-			int index = 0;
-			for (size_t i = 0; i < input_numbers.size(); i++) {
-				for (size_t j = 0; j < pow(2, i); j++) {
-					tree.push_back(new Node(index, input_numbers[i]));
-					index++;
-				}
-			}
-
-			vector<char> solution_operators = find_solution(tree, sc->target_value);
-			sc->set_solution(solution_operators);
-		}
-		else if (sc->order_mode == "N") {
-			vector<NodeN*> tree;
-			int index = 0;
-			for (size_t i = 0; i < input_numbers.size(); i++) {
-				for (size_t j = 0; j < pow(2, i); j++) {
-					tree.push_back(new NodeN(index, input_numbers[i]));
-					index++;
-				}
-			}
-
-			vector<char> solution_operators = find_solutionN(tree, sc->target_value);
-			sc->set_solution(solution_operators);
-		}
-
-	}
-
-
-	// output
-	for (Scenario* sc : scenarios) {
-		cout << sc->output << endl;
 	}
 
 
