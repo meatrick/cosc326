@@ -125,7 +125,7 @@ int main() {
 				charType type_last = getCharType(c_last);
 
 				if ((type_last == underscore || type_last == dot || type_last == hyphen)
-				&& (type_curr == underscore || type_curr == dot || type_last == hyphen)) {
+				&& (type_curr == underscore || type_curr == dot || type_curr == hyphen)) {
 					throw "double separator";
 				}
 				
@@ -274,6 +274,17 @@ int main() {
 					size_t last_pos = line.size() - 1;
 					if (extension_pos != string::npos) {
 						valid_ext = true;
+
+						// ensure there aren't underscores or hyphens in the domain name
+						// from @ to extension_pos
+						size_t at_location = line.find('@');
+						for (size_t index = at_location + 1; index < extension_pos; index++) {
+							char c = line[index];
+							if (getCharType(c) == underscore || getCharType(c) == hyphen) {
+								throw "invalid character in domain name";
+							}
+						}
+
 						if (extension_pos + ext_size != last_pos + 1) {
 							throw "domain extension not at end of input";
 						}
@@ -283,7 +294,9 @@ int main() {
 
 				if (!valid_ext) {
 					throw "no valid domain extension";
-				}
+				} 
+
+				
 			}
 
 
