@@ -30,6 +30,11 @@ struct Scenario {
 			this->output = order_mode + " " + to_string(target_value) + " impossible";
 			return;
 		}
+		
+		if (solution_operators[0] == '1') { // single operand, correct
+			this->output = order_mode + " " + to_string(target_value) + " " + to_string(this->numbers[0]);
+			return;
+		}
 
 		this->output = order_mode + " " + to_string(target_value) + " ";
 		for (int i = 0; i < this->numbers.size(); i++) {
@@ -131,6 +136,16 @@ vector<char> DFSN(vector<int> input_numbers, unsigned int level, pair<int, int> 
 
 // find solution for type L
 vector<char> find_solution(vector<int> input_numbers, int target_value) {
+	// special case: 1 input operand
+	if (input_numbers.size() == 1) {
+		vector<char> operators_solution;
+		if (input_numbers[0] == target_value) {
+			operators_solution.push_back('1');
+		} else {
+			operators_solution.push_back('0');
+		}
+		return operators_solution;
+	}
 
 	vector<char> operators;
 	vector<char> operators_solution = DFS(input_numbers, 0, input_numbers[0], operators, target_value);
@@ -145,6 +160,17 @@ vector<char> find_solution(vector<int> input_numbers, int target_value) {
 
 
 vector<char> find_solutionN(vector<int> input_numbers, int target_value) {
+	// special case: 1 input operand
+	if (input_numbers.size() == 1) {
+		vector<char> operators_solution;
+		if (input_numbers[0] == target_value) {
+			operators_solution.push_back('1');
+		} else {
+			operators_solution.push_back('0');
+		}
+		return operators_solution;
+	}
+
 	vector<char> operators;
 	pair<int, int> operands(0, input_numbers[0]);
 
