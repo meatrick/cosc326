@@ -47,13 +47,19 @@ struct Scenario {
 	}
 };
 
-
 vector<char> DFS(vector<int> input_numbers, unsigned int level, int partial_sum, vector<char> operators, int target_value) {
+	// trim
+	if (partial_sum > target_value) {
+		vector<char> empty_vec;
+		empty_vec.clear();
+		return empty_vec;
+	}
+
 	// base case: if start_node is a leaf
 	if (level == input_numbers.size() - 1) {
 		if (partial_sum == target_value) {
 			return operators;
-		}
+		} 
 	}
 	else {
 		level++;
@@ -83,13 +89,13 @@ vector<char> DFS(vector<int> input_numbers, unsigned int level, int partial_sum,
 	return empty_vec;
 }
 
-vector<char> DFSN(vector<int> input_numbers, unsigned int level, vector<int> operands, vector<char> operators, int target_value) {
+
+vector<char> DFSN(vector<int> input_numbers, unsigned int level, pair<int, int> operands, vector<char> operators, int target_value) {
+	
+	
 	// base case: if start_node is a leaf: only additions remain, sum it all up
 	if (level == input_numbers.size() - 1) {
-		int sum = 0;
-		for (int i = 0; i < operands.size(); i++) {
-			sum += operands[i];
-		}
+		int sum = operands.first + operands.second;
 
 		if (sum == target_value) {
 			return operators;
@@ -100,16 +106,16 @@ vector<char> DFSN(vector<int> input_numbers, unsigned int level, vector<int> ope
 		level++;
 		vector<char> solution;
 		vector<char> operators_left = operators, operators_right = operators;
-		vector<int> operands_left = operands, operands_right = operands;
+		pair<int,int> operands_left = operands, operands_right = operands;
 
-		operands_left.push_back(input_numbers[level]);
+		operands_left = make_pair(operands_left.first + operands_left.second, input_numbers[level]);
 		operators_left.push_back('+');
 		solution = DFSN(input_numbers, level, operands_left, operators_left, target_value);
 		if (!solution.empty()) {
 			return solution;
 		}
 
-		operands_right.back() *= input_numbers[level];
+		operands_right = make_pair(operands_right.first, operands_right.second * input_numbers[level]);
 		operators_right.push_back('*'); 
 		solution = DFSN(input_numbers, level, operands_right, operators_right, target_value);
 		if (!solution.empty()) {
@@ -140,8 +146,7 @@ vector<char> find_solution(vector<int> input_numbers, int target_value) {
 
 vector<char> find_solutionN(vector<int> input_numbers, int target_value) {
 	vector<char> operators;
-	vector<int> operands;
-	operands.push_back(input_numbers[0]);
+	pair<int, int> operands(0, input_numbers[0]);
 
 	vector<char> operators_solution = DFSN(input_numbers, 0, operands, operators, target_value);
 
