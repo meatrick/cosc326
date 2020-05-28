@@ -76,6 +76,7 @@ nx.draw_networkx_labels(G, pos, font_size=12)
 #output to file
 plt.axis('off')
 plt.tight_layout()
+plt.title("Cheapest Bus Route - COSC 326")
 plt.savefig('etude12.png')
 
 
