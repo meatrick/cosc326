@@ -365,17 +365,17 @@ public void addRoute(City city_from, City city_to, double fare) throws Exception
 			fw.write("\n");
 		}
 		
-		fw.write("\n");
+		fw.write("Routes:\n");
 		
-		// write all routes
+		// write every other route 
 		for (Route route : rm.all_routes) {
 			// route_from, route_to, fare
 			fw.write(route.city_from.city_name);
 			fw.write(" ");
 			fw.write(route.city_to.city_name);
 			fw.write(" ");
-			fw.write(Double.toString(route.fare));
-			fw.write("\n");
+      fw.write(Double.toString(route.fare));
+      fw.write("\n");
 		}
 		fw.close();
 	} catch (IOException e) {
