@@ -66,12 +66,17 @@ nx.draw_networkx_nodes(G, pos, nodelist=normal_node_indexes, node_color='b', nod
 nx.draw_networkx_nodes(G, pos, nodelist=final_node_indexes, node_color='orange', node_size=500, alpha=0.8)
 
 # normal edges
-nx.draw_networkx_edges(G, pos, edgelist=normal_edge_indexes, edge_color='b', width=2, style='dashed', alpha=0.5)
+nx.draw_networkx_edges(G, pos, edgelist=normal_edge_indexes, edge_color='b', width=2, style='dashed' alpha=0.5)
 
 # special edges
 nx.draw_networkx_edges(G, pos, edgelist=final_edge_indexes, edge_color='g', width=2)
 
+# draw edge labels
+# weights = nx.get_edge_attributes(G, 'weight')
+# nx.draw_networkx_edge_labels(G, pos, weights)
+
 nx.draw_networkx_labels(G, pos, font_size=12)
+
 
 #output to file
 plt.axis('off')
