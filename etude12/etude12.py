@@ -1,9 +1,3 @@
-# # get input from params.txt
-# read the file
-# load into objects?
-# create the graph
-# pass the graph to the drawing alg
-
 import sys
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -12,6 +6,15 @@ import matplotlib.pyplot as plt
 # Using readlines() 
 file1 = open('params.txt', 'r') 
 Lines = file1.readlines() 
+
+#debug 
+f = open("output_test.txt", "w")
+count = 0
+# Strips the newline character 
+for line in Lines: 
+    f.write("Line{}: {}".format(count, line.strip()))
+    f.write("\n")
+    count = count + 1
 
 # load final route into list of strings
 final_route = Lines[0] 
@@ -55,6 +58,9 @@ for index in range(separator_index + 1, len(Lines)):
     else:
         normal_edge_indexes.append((params[0], params[1], params[2]))
 
+# remove one direction of each bidrectional edge
+normal_edge_indexes = normal_edge_indexes[1::2]
+
 # get positiions for nodes/edges
 pos=nx.spring_layout(G)
 
@@ -66,14 +72,14 @@ nx.draw_networkx_nodes(G, pos, nodelist=normal_node_indexes, node_color='b', nod
 nx.draw_networkx_nodes(G, pos, nodelist=final_node_indexes, node_color='orange', node_size=500, alpha=0.8)
 
 # normal edges
-nx.draw_networkx_edges(G, pos, edgelist=normal_edge_indexes, edge_color='b', width=2, style='dashed' alpha=0.5)
+nx.draw_networkx_edges(G, pos, edgelist=normal_edge_indexes, edge_color='b', width=2, style='dashed', alpha=0.5)
 
 # special edges
 nx.draw_networkx_edges(G, pos, edgelist=final_edge_indexes, edge_color='g', width=2)
 
 # draw edge labels
-# weights = nx.get_edge_attributes(G, 'weight')
-# nx.draw_networkx_edge_labels(G, pos, weights)
+weights = nx.get_edge_attributes(G, 'weight')
+nx.draw_networkx_edge_labels(G, pos, weights)
 
 nx.draw_networkx_labels(G, pos, font_size=12)
 

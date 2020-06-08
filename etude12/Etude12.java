@@ -367,8 +367,13 @@ public void addRoute(City city_from, City city_to, double fare) throws Exception
 		
 		fw.write("Routes:\n");
 		
-		// write every other route 
+    // write every other route 
+    ArrayList<Route> alreadySeen = new ArrayList<Route>();
 		for (Route route : rm.all_routes) {
+      if (alreadySeen.contains(route)) {
+        continue;
+      }
+      alreadySeen.add(route);
 			// route_from, route_to, fare
 			fw.write(route.city_from.city_name);
 			fw.write(" ");
